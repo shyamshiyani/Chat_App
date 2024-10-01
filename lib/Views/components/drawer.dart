@@ -64,11 +64,6 @@ class Drawer_WidgetState extends State<Drawer_Widget> {
     }
   }
 
-  Future<void> clearStoredImage() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('profile_image_path'); // Clear stored image path
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.user == null) {
@@ -134,10 +129,10 @@ class Drawer_WidgetState extends State<Drawer_Widget> {
             child: ElevatedButton.icon(
               onPressed: () async {
                 await AuthHelper.authHelper.signOutUser();
-                await clearStoredImage();
-                Navigator.of(context).pushReplacementNamed('/LoginScreen');
+                Navigator.of(context as BuildContext)
+                    .pushReplacementNamed('/LoginScreen');
               },
-              icon: const Icon(Icons.logout),
+              icon: Icon(Icons.logout),
               label: const Text("Sign Out"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: backgroundColor,

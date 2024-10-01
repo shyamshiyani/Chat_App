@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,21 +46,15 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (res['user'] != null) {
-        User user = res['user'];
-
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isUserLogin', true);
-
-        // Navigate to the home screen
-        Get.offAllNamed('/', arguments: user);
+        Get.offAllNamed('/', arguments: res['user']);
         Get.snackbar(
           "Login Successful",
           "Welcome back!",
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Color(0xFFA26769),
+          backgroundColor: Color(0xFFA26769), // Primary color
           colorText: Colors.white,
         );
-
+        User user = res['user'];
         await DatabaseHelper.databaseHelper
             .addAuthenticatedUser(email: user.email!);
       } else {
@@ -69,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
           "Login Failed",
           res['error'] ?? "An unknown error occurred",
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Color(0xFF582C4D),
+          backgroundColor: Color(0xFF582C4D), // Accent color
           colorText: Colors.white,
         );
       }
@@ -107,12 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
     Map<String, dynamic> res = await AuthHelper.authHelper.googleUserLogin();
 
     if (res['user'] != null) {
-      User user = res['user'];
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isUserLogin', true);
-
-      Get.offAllNamed('/', arguments: user);
+      Get.offAllNamed('/', arguments: res['user']);
       Get.snackbar(
         "Google Login",
         "Logged in with Google",
@@ -121,6 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
         colorText: Colors.white,
       );
 
+      User user = res['user'];
       await DatabaseHelper.databaseHelper
           .addAuthenticatedUser(email: user.email!);
     } else {

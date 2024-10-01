@@ -1,7 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../Utils/Helper/Auth_Helper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'Home_Screen.dart';
 import 'Login_Screen.dart';
 
@@ -31,37 +30,40 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() {
         isFirstTime = false;
       });
+      _navigateToHomeScreen();
     }
-
-    // Always navigate after 4 seconds
-    Future.delayed(const Duration(seconds: 4), _navigateToNextScreen);
   }
 
-  Future<void> _navigateToNextScreen() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool? isUserLoggedIn = prefs.getBool('isUserLogin');
+  void _navigateToLoginScreen() async {
+    await Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+      (route) => false,
+    );
+  }
 
-    if (isUserLoggedIn == true) {
-      User? user = AuthHelper.firebaseAuth.currentUser; // Fetch current user
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(),
-          settings: RouteSettings(arguments: user),
-        ),
-        (route) => false,
-      );
-    } else {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-        (route) => false,
-      );
-    }
+  void _navigateToHomeScreen() async {
+    // Assuming the user is logged in, fetch the current user
+    User? user = FirebaseAuth.instance.currentUser;
+
+    await Future.delayed(const Duration(seconds: 3), () {
+      if (user != null) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(),
+            settings: RouteSettings(arguments: user),
+          ),
+          (route) => false,
+        );
+      } else {
+        _navigateToLoginScreen();
+      }
+    });
   }
 
   Future<void> _getStarted() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstTime', false);
-    _navigateToNextScreen();
+    _navigateToLoginScreen();
   }
 
   @override

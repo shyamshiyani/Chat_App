@@ -10,7 +10,7 @@ class DatabaseHelper {
   static final FirebaseFirestore db = FirebaseFirestore.instance;
   FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   // Add user
-  addAuthenticatedUser({required String email}) async {
+  /*addAuthenticatedUser({required String email}) async {
     bool isUserCreated = false;
 
     QuerySnapshot<Map<String, dynamic>> querySnapshot =
@@ -53,6 +53,65 @@ class DatabaseHelper {
       await db.collection("records").doc("users").update({
         "id": id,
         "counter": counter,
+      });
+    }
+  }*/
+  addAuthenticatedUser({required String email}) async {
+    bool isUserCreated = false;
+    String? existingDocId;
+
+    // Get all users
+    QuerySnapshot<Map<String, dynamic>> querySnapshot =
+        await db.collection("users").get();
+
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs =
+        querySnapshot.docs;
+
+    // Check if user exists and store the document ID
+    allDocs.forEach((QueryDocumentSnapshot<Map<String, dynamic>> e) {
+      Map<String, dynamic> docData = e.data();
+
+      if (docData['email'] == email) {
+        isUserCreated = true;
+        existingDocId = e.id; // Store the existing document ID
+      }
+    });
+
+    if (!isUserCreated) {
+      // User does not exist, create a new one
+      DocumentSnapshot<Map<String, dynamic>> qs =
+          await db.collection("records").doc("users").get();
+      Map<String, dynamic>? data = qs.data();
+
+      int id = data!['id'];
+      int counter = data['counter'];
+
+      id++;
+
+      // Manually generated ID
+      String? token = await ShowNotificationFromFirebasePanelHelper
+          .showNotificationFromFirebasePanelHelper
+          .getUserFCMToken();
+
+      await db.collection("users").doc("$id").set({
+        "email": email,
+        "FCMtoken": token,
+      });
+
+      counter++;
+
+      await db.collection("records").doc("users").update({
+        "id": id,
+        "counter": counter,
+      });
+    } else {
+      // User exists, update the FCMtoken
+      String? newToken = await ShowNotificationFromFirebasePanelHelper
+          .showNotificationFromFirebasePanelHelper
+          .getUserFCMToken();
+
+      await db.collection("users").doc(existingDocId).update({
+        "FCMtoken": newToken,
       });
     }
   }

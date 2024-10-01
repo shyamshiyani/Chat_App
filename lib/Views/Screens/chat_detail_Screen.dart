@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:chat_app_firebase/Utils/Helper/Database_helper.dart';
 import 'package:chat_app_firebase/Utils/Helper/Show_notification_from_firebase_panel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,6 +18,7 @@ class _ChatScreenState extends State<ChatScreen> {
       TextEditingController();
   String? msg;
   String? updatedMassage;
+  GlobalKey<FormState> formKey = GlobalKey();
 
   // Function to format time difference
   String getTimeDifference(Timestamp timestamp) {
@@ -117,36 +117,247 @@ class _ChatScreenState extends State<ChatScreen> {
                                       ? CrossAxisAlignment.start
                                       : CrossAxisAlignment.end,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 4),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10, horizontal: 14),
-                                        decoration: BoxDecoration(
-                                          color: isSender
-                                              ? messageSentColor
-                                              : messageReceivedColor,
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${allMessages[index].data()['msg']}",
-                                              style: TextStyle(
+                                    isSender
+                                        ? Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 4),
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                      horizontal: 14),
+                                              decoration: BoxDecoration(
                                                 color: isSender
-                                                    ? primaryColor
-                                                    : accentColor,
-                                                fontSize: 16,
+                                                    ? messageSentColor
+                                                    : messageReceivedColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "${allMessages[index].data()['msg']}",
+                                                    style: TextStyle(
+                                                      color: isSender
+                                                          ? primaryColor
+                                                          : accentColor,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                                          )
+                                        : PopupMenuButton(
+                                            onSelected: (val) {
+                                              if (val == 'edit') {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return Form(
+                                                      key: formKey,
+                                                      child: AlertDialog(
+                                                        title: const Text(
+                                                            "Edit message"),
+                                                        content: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            TextFormField(
+                                                              onSaved: (val) {
+                                                                updatedMassage =
+                                                                    val;
+                                                              },
+                                                              controller:
+                                                                  updatedMessageController,
+                                                              decoration:
+                                                                  const InputDecoration(
+                                                                border:
+                                                                    OutlineInputBorder(),
+                                                                hintText:
+                                                                    "Type message",
+                                                              ),
+                                                            )
+                                                          ],
+                                                        ),
+                                                        actions: [
+                                                          OutlinedButton(
+                                                            onPressed: () {},
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                          ),
+                                                          ElevatedButton(
+                                                            onPressed: () {
+                                                              if (formKey
+                                                                  .currentState!
+                                                                  .validate()) {
+                                                                updatedMassage =
+                                                                    updatedMessageController
+                                                                        .text;
+
+                                                                DatabaseHelper
+                                                                    .databaseHelper
+                                                                    .updateMassages(
+                                                                  receiverEmail:
+                                                                      receiver[
+                                                                          'email'],
+                                                                  msg:
+                                                                      updatedMassage!,
+                                                                  messageDocId:
+                                                                      allMessages[
+                                                                              index]
+                                                                          .id,
+                                                                );
+
+                                                                updatedMessageController
+                                                                    .clear();
+                                                                updatedMassage =
+                                                                    null;
+
+                                                                Get.snackbar(
+                                                                  'Message Updated',
+                                                                  'Your message has been successfully updated.',
+                                                                  snackPosition:
+                                                                      SnackPosition
+                                                                          .BOTTOM,
+                                                                  duration:
+                                                                      const Duration(
+                                                                          seconds:
+                                                                              2),
+                                                                  backgroundColor:
+                                                                      Colors
+                                                                          .green,
+                                                                  colorText:
+                                                                      Colors
+                                                                          .white,
+                                                                );
+
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              }
+                                                            },
+                                                            child: const Text(
+                                                                "Save"),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              }
+                                              if (val == 'delete') {
+                                                // Show confirmation dialog
+                                                showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                          'Confirm Deletion'),
+                                                      content: const Text(
+                                                          'Are you sure you want to delete this message?'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(); // Close the dialog
+                                                          },
+                                                          child: const Text(
+                                                              'Cancel'),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            DatabaseHelper
+                                                                .databaseHelper
+                                                                .deleteMassages(
+                                                              receiverEmail:
+                                                                  receiver[
+                                                                      'email'],
+                                                              messageDocId:
+                                                                  allMessages[
+                                                                          index]
+                                                                      .id,
+                                                            );
+
+                                                            Get.snackbar(
+                                                              'Message Deleted',
+                                                              'The message has been successfully deleted.',
+                                                              snackPosition:
+                                                                  SnackPosition
+                                                                      .BOTTOM,
+                                                              duration:
+                                                                  const Duration(
+                                                                      seconds:
+                                                                          2),
+                                                              backgroundColor:
+                                                                  Colors.red,
+                                                              colorText:
+                                                                  Colors.white,
+                                                            );
+
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: const Text(
+                                                              'Delete'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              }
+                                            },
+                                            itemBuilder: (context) {
+                                              return [
+                                                const PopupMenuItem(
+                                                  child: Text("Edit"),
+                                                  value: "edit",
+                                                ),
+                                                const PopupMenuItem(
+                                                  child: Text("Delete"),
+                                                  value: 'delete',
+                                                ),
+                                              ];
+                                            },
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 10,
+                                                        horizontal: 14),
+                                                decoration: BoxDecoration(
+                                                  color: isSender
+                                                      ? messageSentColor
+                                                      : messageReceivedColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "${allMessages[index].data()['msg']}",
+                                                      style: TextStyle(
+                                                        color: isSender
+                                                            ? primaryColor
+                                                            : accentColor,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                     Padding(
                                       padding: const EdgeInsets.only(
                                           left: 8, right: 8, bottom: 8),
@@ -216,7 +427,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       Get.snackbar(
                         "Error",
                         "Message cannot be empty",
-                        duration: Duration(seconds: 1),
+                        duration: const Duration(seconds: 1),
                         snackPosition: SnackPosition.BOTTOM,
                       );
                     }

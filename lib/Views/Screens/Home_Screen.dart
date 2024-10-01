@@ -1,10 +1,10 @@
-import 'package:chat_app_firebase/Utils/Helper/Database_helper.dart';
-import 'package:chat_app_firebase/Views/components/drawer.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import '../../Utils/Helper/Auth_Helper.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:chat_app_firebase/Utils/Helper/Database_helper.dart';
+import 'package:chat_app_firebase/Utils/Helper/Auth_Helper.dart';
+import 'package:chat_app_firebase/Views/components/drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,24 +14,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> _searchResults = [];
-  bool _isSearching = false;
-
-  void _searchUsers(String searchTerm) async {
-    if (searchTerm.isNotEmpty) {
-      List<Map<String, dynamic>> users =
-          await DatabaseHelper.databaseHelper.searchUsers(searchTerm);
-      setState(() {
-        _searchResults = users;
-        _isSearching = true;
-      });
-    } else {
-      setState(() {
-        _isSearching = false; // Reset search
-      });
-    }
-  }
-
   void signOut() async {
     await AuthHelper.authHelper.signOutUser();
     Navigator.of(context).pushReplacementNamed('/LoginScreen');
@@ -68,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   displayName: nameController.text,
                 );
                 Navigator.of(context).pop();
-                setState(() {}); // Refresh UI if needed
+                setState(() {});
               },
               child: Text("Save"),
             ),
@@ -87,9 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     User? user = ModalRoute.of(context)!.settings.arguments as User?;
 
     if (user == null) {
-      return Scaffold(
-        body: Center(child: Text('User not found!')),
-      );
+      return Center(child: Text("User not found!"));
     }
 
     return Scaffold(
@@ -152,7 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.8),
                 ),
-                onChanged: _searchUsers, // Use your search function
+                onChanged: (value) {
+                  // Implement search logic here
+                },
               ),
             ),
             Expanded(
@@ -217,7 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: allDocs.length,
                     );
                   }
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 },
               ),
             ),

@@ -42,7 +42,6 @@ class ShowNotificationFromFirebasePanelHelper {
       {required String title,
       required String body,
       required String token}) async {
-    // String? token = await getUserFCMToken();
     final String accessToken = await getAccessToken();
     const String fcmUrl =
         'https://fcm.googleapis.com/v1/projects/chat-app-firebase-44f57/messages:send';
