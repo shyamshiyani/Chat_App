@@ -1,16 +1,19 @@
-# chat_app_firebase
+# ChatNest - Firebase Chat Application
 
-A new Flutter project.
+ChatNest is a mobile chat application developed using Flutter and Firebase. It allows users to communicate with each other in real-time, offering secure authentication methods and a smooth, user-friendly interface.
 
-## Getting Started
+## Project Description
 
-This project is a starting point for a Flutter application.
+ChatNest is designed to provide a simple yet powerful chat experience. The app integrates Firebase Authentication to offer multiple sign-in methods like Google, guest login, and email/password login. All user data, including messages and profile information, is stored in Firebase Firestore, ensuring real-time synchronization across devices.
 
-A few resources to get you started if this is your first Flutter project:
+### Key Features:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Multiple Sign-in Options**: Users can sign in using Google, guest login, or email and password.
+- **Real-time Messaging**: Every user gets a dedicated chat page to communicate in real time with other users.
+- **Splash Screen**: A welcoming splash screen appears when the app is launched.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Technologies Used
+
+- **Flutter**: Cross-platform mobile development framework.
+- **Firebase Firestore**: Real-time database for chat messages and user data.
+- **Firebase Authentication**: Secure sign-in methods for users.
